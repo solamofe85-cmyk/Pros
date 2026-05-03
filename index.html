@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pharos Initiative</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400;500&family=Jost:wght@300;400;500&display=swap');
+
+    :root {
+      --bg:       #0a0908;
+      --bg2:      #0f0d0c;
+      --surface:  #141210;
+      --surface2: #1a1715;
+      --gold:     #c9a84c;
+      --gold-dim: #8a6e2e;
+      --gold-pale:#f0d98a;
+      --champ:    #e8d5a3;
+      --ink:      #ede8df;
+      --muted:    #6b6358;
+      --muted2:   #9c9080;
+      --border:   rgba(201,168,76,0.12);
+      --border2:  rgba(201,168,76,0.22);
+      --glow:     rgba(201,168,76,0.08);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Jost', sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      padding: 0 0 72px;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(201,168,76,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 60% at 0% 100%, rgba(201,168,76,0.03) 0%, transparent 50%);
+    }
+
+    /* subtle grain */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 200px;
+    }
+
+    .page {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ══════════════════════
+       TOP BAR
+    ══════════════════════ */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 24px 0 20px;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .topbar::after {
+      content: '';
+      position: absolute;
+      bottom: -1px; left: 20%; right: 20%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      opacity: 0.5;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .brand-emblem {
+      width: 38px; height: 38px;
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+
+    .brand-emblem::before,
+    .brand-emblem::after {
+      content: '';
+      position: absolute;
+    }
+
+    .brand-emblem::before {
+      width: 16px; height: 16px;
+      border: 1px solid var(--gold);
+      transform: rotate(45deg);
+    }
+
+    .brand-emblem::after {
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--gold);
+      animation: glimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes glimmer {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.7); }
+    }
+
+    .brand-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: 22px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--champ);
+    }
+
+    .brand-text span {
+      color: var(--gold);
+      font-style: italic;
+    }
+
+    .top-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .top-tags {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .ttag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted2);
+      padding: 5px 10px;
+      border: 1px solid var(--border);
+    }
+
+    .live-pip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    .pip-dot {
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--gold);
+      animation: glimmer 2s ease-in-out infinite;
+    }
+
+    /* ══════════════════════
+       HERO
+    ══════════════════════ */
+    .hero {
+      padding: 60px 0 48px;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+
+    .hero-left {}
+
+    .hero-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hero-eyebrow::before {
+      content: '';
+      width: 32px; height: 1px;
+      background: var(--gold-dim);
+    }
+
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 300;
+      font-size: clamp(44px, 5.5vw, 80px);
+      line-height: 1.05;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--gold);
+      display: block;
+    }
+
+    .hero-copy {
+      margin-top: 26px;
+      font-size: 15px;
+      line-height: 1.9;
+      color: var(--muted2);
+      font-weight: 300;
+      max-width: 460px;
+    }
+
+    .hero-divider {
+      width: 48px; height: 1px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      margin: 24px 0;
+    }
+
+    .hero-right {
+      display: grid;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .hero-fact {
+      background: var(--bg2);
+      padding: 22px 24px;
+      transition: background 0.2s ease;
+    }
+
+    .hero-fact:hover {
+      background: var(--surface);
+    }
+
+    .hf-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      color: var(--gold-dim);
+      margin-bottom: 8px;
+    }
+
+    .hf-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--champ);
+      margin-bottom: 6px;
+    }
+
+    .hf-body {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    /* ══════════════════════
+       TWO-COL SECTIONS
+    ══════════════════════ */
+    .section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel {
+      padding: 36px 36px 36px 0;
+      border-right: 1px solid var(--border);
+    }
+
+    .panel.right {
+      border-right: none;
+      padding-left: 36px;
+      padding-right: 0;
+    }
+
+    .panel-head {
+      margin-bottom: 28px;
+    }
+
+    .panel-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold-dim);
+      margin-bottom: 10px;
+    }
+
+    .panel-head h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      color: var(--champ);
+      margin-bottom: 8px;
+    }
+
+    .panel-head p {
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .panel-head-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .status-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border: 1px solid var(--border2);
+      color: var(--gold);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ── metrics ── */
+    .metrics {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .metric {
+      background: var(--bg2);
+      padding: 20px;
+      transition: background 0.2s ease;
+    }
+
+    .metric:hover { background: var(--surface); }
+
+    .metric-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .metric-value {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px;
+      font-weight: 300;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      color: var(--gold-pale);
+    }
+
+    .metric-value.loading {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--muted);
+      animation: breathe 2s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .metric-sub {
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 300;
+      color: var(--muted);
+    }
+
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    /* ── terminal ── */
+    .feed-wrap {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .feed-title {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .feed {
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 300;
+      line-height: 2.0;
+      color: var(--gold-dim);
+      min-height: 215px;
+      white-space: pre-wrap;
+    }
+
+    /* ── cards ── */
+    .cards { display: grid; gap: 0; }
+
+    .card {
+      padding: 18px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 20px;
+      transition: padding-left 0.2s ease;
+    }
+
+    .card:last-child { border-bottom: none; }
+
+    .card:hover { padding-left: 8px; }
+
+    .card-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 300;
+      color: var(--gold-dim);
+      padding-top: 3px;
+      flex-shrink: 0;
+      width: 28px;
+    }
+
+    .card-body h4 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 17px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      color: var(--champ);
+      margin-bottom: 6px;
+    }
+
+    .card-body p, .card-body li {
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .card-body ul { padding-left: 14px; }
+    .card-body li { margin-bottom: 3px; }
+
+    /* ── link grid ── */
+    .link-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 20px;
+    }
+
+    .link-grid a {
+      text-decoration: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      color: var(--muted2);
+      background: transparent;
+      transition: all 0.2s ease;
+    }
+
+    .link-grid a:hover {
+      color: var(--gold);
+      border-color: var(--border2);
+      background: var(--glow);
+    }
+
+    /* ══════════════════════
+       FOOTER
+    ══════════════════════ */
+    .footer {
+      padding: 28px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .footer-sig {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 16px;
+      font-weight: 300;
+      font-style: italic;
+      color: var(--muted2);
+      letter-spacing: 0.04em;
+    }
+
+    .footer-sig strong {
+      font-style: normal;
+      font-weight: 400;
+      color: var(--gold);
+    }
+
+    .footer-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 300;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ══════════════════════
+       ANIMATIONS
+    ══════════════════════ */
+    @keyframes unveil {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .topbar  { animation: unveil 0.6s ease both; }
+    .hero    { animation: unveil 0.6s 0.1s ease both; }
+    .section { animation: unveil 0.6s 0.2s ease both; }
+    .section + .section { animation-delay: 0.28s; }
+    .section + .section + .section { animation-delay: 0.36s; }
+    .footer  { animation: unveil 0.6s 0.42s ease both; }
+
+    /* ══════════════════════
+       RESPONSIVE
+    ══════════════════════ */
+    @media (max-width: 960px) {
+      .hero, .section { grid-template-columns: 1fr; }
+
+      .hero { gap: 40px; padding: 40px 0 36px; }
+
+      .panel {
+        padding: 24px 0;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .panel.right {
+        padding-left: 0;
+        border-bottom: none;
+      }
+
+      .metrics { grid-template-columns: 1fr 1fr; }
+
+      .page { padding: 0 18px; }
+      h1 { font-size: 44px; }
+
+      .top-tags { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-emblem"></div>
+      <div class="brand-text">Pharos <span>Initiative</span></div>
+    </div>
+    <div class="top-right">
+      <div class="top-tags">
+        <div class="ttag">Live RPC Data</div>
+        <div class="ttag">No Wallet Connect</div>
+        <div class="ttag">Builder-Facing</div>
+      </div>
+      <div class="live-pip">
+        <div class="pip-dot"></div>
+        Live
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Init</div>
+      <h1>
+        Precision built<br>for the ones
+        <em>who ship.</em>
+      </h1>
+      <div class="hero-divider"></div>
+      <p class="hero-copy">A cleaner builder-facing surface for the Pharos ecosystem — live mainnet and testnet RPC reads combined with the core primitives that actually make this chain worth building on.</p>
+    </div>
+    <div class="hero-right">
+      <div class="hero-fact">
+        <div class="hf-num">01 — Surface</div>
+        <div class="hf-title">Live Surface</div>
+        <div class="hf-body">Reads from public RPC endpoints and refreshes automatically.</div>
+      </div>
+      <div class="hero-fact">
+        <div class="hf-num">02 — Scope</div>
+        <div class="hf-title">Focused Scope</div>
+        <div class="hf-body">No wallet friction, no fluff — just useful ecosystem structure.</div>
+      </div>
+      <div class="hero-fact">
+        <div class="hf-num">03 — Angles</div>
+        <div class="hf-title">Real Angles</div>
+        <div class="hf-body">x402, CCTP, oracles, SPNs, and RealFi-oriented use cases.</div>
+      </div>
+      <div class="hero-fact">
+        <div class="hf-num">04 — Build</div>
+        <div class="hf-title">Built for Builders</div>
+        <div class="hf-body">A lighter ecosystem entry point with live references and cleaner structure.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NETWORK PULSE + LIVE FEED -->
+  <div class="section">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-label">Network</div>
+        <div class="panel-head-row">
+          <h2>Network Pulse</h2>
+          <div class="status-tag" id="rpcStatus">connecting…</div>
+        </div>
+        <p>Live reads from Pharos mainnet and Atlantic testnet public RPC endpoints.</p>
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-label">Mainnet Block</div>
+          <div class="metric-value loading" id="mainnetBlock">—</div>
+          <div class="metric-sub">chain <span id="mainnetChain">…</span></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Testnet Block</div>
+          <div class="metric-value loading" id="testnetBlock">—</div>
+          <div class="metric-sub">chain <span id="testnetChain">…</span></div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Mainnet Gas</div>
+          <div class="metric-value loading" id="mainnetGas">—</div>
+          <div class="metric-sub">rpc.pharos.xyz</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Testnet Gas</div>
+          <div class="metric-value loading" id="testnetGas">—</div>
+          <div class="metric-sub">atlantic.dplabs-internal.com</div>
+        </div>
+      </div>
+      <div class="meta-row">
+        <span>refresh interval — 20s</span>
+        <span id="lastUpdated">awaiting first sync</span>
+      </div>
+    </div>
+
+    <div class="panel right">
+      <div class="panel-head">
+        <div class="panel-label">Terminal</div>
+        <h2>Live Feed</h2>
+        <p>A small operational layer that keeps the surface feeling alive.</p>
+      </div>
+      <div class="feed-wrap">
+        <div class="feed-title">Pharos // Operational Log</div>
+        <div class="feed" id="terminalFeed">[boot] starting terminal...
+[wait] loading live RPC data...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORE PRIMITIVES + BUILD ANGLES -->
+  <div class="section">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-label">Protocol</div>
+        <h2>Core Primitives</h2>
+        <p>The pieces that make Pharos worth paying attention to.</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-num">01</div>
+          <div class="card-body">
+            <h4>x402</h4>
+            <p>Micropayment rails for pay-per-use APIs, agent-native commerce, and programmable access flows.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-num">02</div>
+          <div class="card-body">
+            <h4>Circle CCTP</h4>
+            <p>Native USDC transfer rails with a cleaner burn-and-mint model for cross-chain settlement.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-num">03</div>
+          <div class="card-body">
+            <h4>Oracles + SPNs</h4>
+            <p>Useful for trading, RWAs, market-aware automations, and custom execution surfaces tied to specialized workloads.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel right">
+      <div class="panel-head">
+        <div class="panel-label">Opportunity</div>
+        <h2>Build Angles</h2>
+        <p>Sharper directions that fit the ecosystem better than a generic landing page.</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-num">01</div>
+          <div class="card-body">
+            <h4>Agent Commerce Surface</h4>
+            <p>A clean surface for usage-based APIs, stablecoin settlement patterns, and machine-to-machine payment flows built around x402.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-num">02</div>
+          <div class="card-body">
+            <h4>RealFi Infra Board</h4>
+            <p>A place to map RWAs, oracles, settlement rails, and execution patterns into one builder-friendly interface.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-num">03</div>
+          <div class="card-body">
+            <h4>Builder Ops Layer</h4>
+            <p>A live entry point for developers exploring Pharos through status, explorers, testnet access, and useful primitives.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFERENCES + WHY THIS WORKS -->
+  <div class="section">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-label">Resources</div>
+        <h2>Useful References</h2>
+        <p>Fast jump points into the ecosystem and its public surfaces.</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-num">↗</div>
+          <div class="card-body">
+            <h4>RPC Endpoints</h4>
+            <ul>
+              <li>Mainnet: <span id="mainnetRpc">rpc.pharos.xyz</span></li>
+              <li>Testnet: <span id="testnetRpc">atlantic.dplabs-internal.com</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-num">↗</div>
+          <div class="card-body">
+            <h4>Explorer + CCTP</h4>
+            <ul>
+              <li>PharosScan mainnet</li>
+              <li>Atlantic PharosScan testnet</li>
+              <li>SocialScan explorer surface</li>
+              <li>CCTP domain: 31</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="link-grid">
+        <a href="https://pharos.xyz" target="_blank">Main Site</a>
+        <a href="https://pharos.xyz/devhub" target="_blank">DevHub</a>
+        <a href="https://docs.pharos.xyz" target="_blank">Docs</a>
+        <a href="https://testnet.pharosnetwork.xyz/" target="_blank">Testnet</a>
+        <a href="https://www.pharosscan.xyz" target="_blank">Mainnet Explorer</a>
+        <a href="https://atlantic.pharosscan.xyz/" target="_blank">Testnet Explorer</a>
+        <a href="https://pharos.socialscan.io/" target="_blank">SocialScan</a>
+      </div>
+    </div>
+
+    <div class="panel right">
+      <div class="panel-head">
+        <div class="panel-label">Rationale</div>
+        <h2>Why This Works</h2>
+        <p>A cleaner ecosystem surface that feels presentable without trying too hard.</p>
+      </div>
+      <div class="cards">
+        <div class="card">
+          <div class="card-num">I</div>
+          <div class="card-body">
+            <h4>Live, not fake-live</h4>
+            <p>It reads real network data instead of just imitating a dashboard.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-num">II</div>
+          <div class="card-body">
+            <h4>No trust friction</h4>
+            <p>There's no wallet prompt or sketchy permission step, just a useful public-facing surface.</p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-num">III</div>
+          <div class="card-body">
+            <h4>Easy to extend</h4>
+            <p>You can later add explorer data, richer stats, or ecosystem feeds without rebuilding the whole concept.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-sig">Made with 🤍 for the Pharos Ecosystem — <strong>By Kennyy</strong></div>
+    <div class="footer-meta">Pharos Initiative &nbsp;·&nbsp; Auto-refresh 20s &nbsp;·&nbsp; No wallet required</div>
+  </div>
+
+</div>
+
+<script>
+  const endpoints = {
+    mainnet: 'https://rpc.pharos.xyz',
+    testnet: 'https://atlantic.dplabs-internal.com'
+  };
+
+  const terminal  = document.getElementById('terminalFeed');
+  const statusEl  = document.getElementById('rpcStatus');
+  const lastUpdEl = document.getElementById('lastUpdated');
+
+  function setTerminal(lines) { terminal.textContent = lines.join('\n'); }
+
+  function nowText() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  function hexToInt(h) { return parseInt(h, 16); }
+  function weiToGwei(h) { return (parseInt(h, 16) / 1e9).toFixed(2); }
+
+  function setLoaded(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value;
+    el.classList.remove('loading');
+  }
+
+  async function rpcCall(url, method, params = []) {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', method, params, id: 1 })
+    });
+    if (!res.ok) throw new Error(`${method} failed: ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message || 'RPC error');
+    return data.result;
+  }
+
+  async function fetchNetwork(url) {
+    const [block, gas, chainId] = await Promise.all([
+      rpcCall(url, 'eth_blockNumber'),
+      rpcCall(url, 'eth_gasPrice'),
+      rpcCall(url, 'net_version')
+    ]);
+    return {
+      block: hexToInt(block).toLocaleString(),
+      gas: `${weiToGwei(gas)} gwei`,
+      chainId
+    };
+  }
+
+  async function refresh() {
+    const lines = [
+      `[boot] Pharos Initiative`,
+      `[time] ${nowText()}`,
+      `[probe] checking public mainnet + testnet RPCs`
+    ];
+
+    try {
+      const [mainnet, testnet] = await Promise.all([
+        fetchNetwork(endpoints.mainnet),
+        fetchNetwork(endpoints.testnet)
+      ]);
+
+      setLoaded('mainnetBlock', mainnet.block);
+      setLoaded('testnetBlock', testnet.block);
+      setLoaded('mainnetGas',   mainnet.gas);
+      setLoaded('testnetGas',   testnet.gas);
+      setLoaded('mainnetChain', mainnet.chainId);
+      setLoaded('testnetChain', testnet.chainId);
+
+      statusEl.textContent = 'live';
+      statusEl.style.borderColor = 'rgba(180,140,60,0.4)';
+      statusEl.style.color = '#c9a84c';
+
+      lines.push(`[ok] mainnet chain ${mainnet.chainId} | block ${mainnet.block} | gas ${mainnet.gas}`);
+      lines.push(`[ok] testnet chain ${testnet.chainId} | block ${testnet.block} | gas ${testnet.gas}`);
+      lines.push('[note] public surfaces are stable enough for builder dashboards and ecosystem tooling');
+      lines.push('[angle] strongest narratives: agent commerce, settlement rails, RealFi infra');
+      setTerminal(lines);
+      lastUpdEl.textContent = `synced at ${nowText()}`;
+    } catch (err) {
+      statusEl.textContent = 'degraded';
+      statusEl.style.borderColor = 'rgba(180,80,60,0.4)';
+      statusEl.style.color = '#c96c4c';
+      lines.push(`[err] ${err.message}`);
+      lines.push('[warn] live reads failed — page remains useful as an ecosystem reference');
+      setTerminal(lines);
+      lastUpdEl.textContent = `attempted at ${nowText()}`;
+    }
+  }
+
+  refresh();
+  setInterval(refresh, 20000);
+</script>
+</body>
+</html>
